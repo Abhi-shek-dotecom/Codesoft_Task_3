@@ -1,0 +1,136 @@
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class StudentManagementSystem {
+    private List<Student> students;
+    private Scanner scanner;
+    private final String fileName = "students.txt";
+
+    public StudentManagementSystem() {
+        students = new ArrayList<>();
+        scanner = new Scanner(System.in);
+        loadStudents();
+    }
+
+    public void addStudent() {
+        System.out.print("Enter name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Enter roll number: ");
+        int rollNumber = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        System.out.print("Enter grade: ");
+        String grade = scanner.nextLine();
+
+        students.add(new Student(name, rollNumber, grade));
+        saveStudents();
+    }
+
+    public void removeStudent() {
+        System.out.print("Enter roll number of student to remove: ");
+        int rollNumber = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        Student studentToRemove = null;
+        for (Student student : students) {
+            if (student.getRollNumber() == rollNumber) {
+                studentToRemove = student;
+                break;
+            }
+        }
+
+        if (studentToRemove != null) {
+            students.remove(studentToRemove);
+            saveStudents();
+            System.out.println("Student removed.");
+        } else {
+            System.out.println("Student not found.");
+        }
+    }
+
+    public void searchStudent() {
+        System.out.print("Enter roll number of student to search: ");
+        int rollNumber = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        for (Student student : students) {
+            if (student.getRollNumber() == rollNumber) {
+                System.out.println(student);
+                return;
+            }
+        }
+
+        System.out.println("Student not found.");
+    }
+
+    public void displayAllStudents() {
+        for (Student student : students) {
+            System.out.println(student);
+        }
+    }
+
+    private void saveStudents() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName))) {
+            oos.writeObject(students);
+        } catch (IOException e) {
+            System.out.println("Error saving students: " + e.getMessage());
+        }
+    }
+
+    private void loadStudents() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+            students = (List<Student>) ois.readObject();
+        } catch (FileNotFoundException e) {
+            System.out.println("No previous data found.");
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading students: " + e.getMessage());
+        }
+    }
+
+    public void start() {
+        boolean running = true;
+
+        while (running) {
+            System.out.println("\nStudent Management System");
+            System.out.println("1. Add Student");
+            System.out.println("2. Remove Student");
+            System.out.println("3. Search Student");
+            System.out.println("4. Display All Students");
+            System.out.println("5. Exit");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    addStudent();
+                    break;
+                case 2:
+                    removeStudent();
+                    break;
+                case 3:
+                    searchStudent();
+                    break;
+                case 4:
+                    displayAllStudents();
+                    break;
+                case 5:
+                    running = false;
+                    System.out.println("Exiting the system. Goodbye!");
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+
+        scanner.close();
+    }
+
+    public static void main(String[] args) {
+        StudentManagementSystem sms = new StudentManagementSystem();
+        sms.start();
+    }
+}
